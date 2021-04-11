@@ -1,5 +1,31 @@
 SUA에서 진행하고 있는 오픈소스 보안 스터디입니다.
 
+# [Secure-coding-with-python]
+
+## Introduction
+Secure-coding-with-python은 말 그대로 Python을 사용한 시큐어 코딩에 대해 다루고 있다. 이 소스에는 애플리케이션 각 개발 단계에 대응하는 브랜치들이 있다. 이 개발 단계에서 일부러 보안상 취약하도록 구성하고 테스트해 최종적으로 코드를 수정하도록 한다.
+
+## Usage
+
+
+
+# [Picocrypt]
+
+## Introduction
+Picocrypt은 매우 작고("Pico"), 매우 간단하며 안전한 파일 암호화 도구입니다. 이 도구는 최신 ChaCha20-Poly1305와 Argon2 암호화 알고리즘을 사용했습니다. 파일을 선택하고 비밀번호를 입력하면 그 파일을 암호화할 수 있으며 암호화가 완료되면 원본파일은 삭제됩니다.
+
+## Analysis
+
+
+
+
+# [Python-Scripts]
+
+## Introduction
+개인이 침투테스트와 자동화를 위해 모아놓은 Python Script다. 해시값을 크랙하는 간단한 도구나 키로거 공격, 사전 공격을 가능하게 하는 스크립트, 간이포트 스캐너와 같은 침투 테스트를 위한 다양한 스크립트가 있다. 
+
+
+
 # [오픈소스 이름]
 
 ## Introduction
@@ -68,7 +94,3 @@ function retry {
   exit $exit_status
 }
 ```
-
-# [오픈소스 이름]
-
-# [오픈소스 이름]
