@@ -1,14 +1,5 @@
 SUA에서 진행하고 있는 오픈소스 보안 스터디입니다.
 
-# [Secure-coding-with-python]
-
-## Introduction
-Secure-coding-with-python은 말 그대로 Python을 사용한 시큐어 코딩에 대해 다루고 있다. 이 소스에는 애플리케이션 각 개발 단계에 대응하는 브랜치들이 있다. 이 개발 단계에서 일부러 보안상 취약하도록 구성하고 테스트해 최종적으로 코드를 수정하도록 한다.
-
-## Usage
-
-
-
 # [Picocrypt]
 
 ## Introduction
@@ -16,8 +7,26 @@ Picocrypt은 매우 작고("Pico"), 매우 간단하며 안전한 파일 암호�
 
 ## Analysis
 
+-[Picocrypt.py](https://github.com/canon827/Picocrypt/blob/main/src/Picocrypt.py): Picocrypt가 암호화 도구로써 기능하기 위해 주요 기능인 암호화/복호화 기능을 포함한 전반적인 기능을 나타낸 코드이다.
+
+'# [file drag](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L103)inputSelected라는 이름으로  사용자가 파일이나 폴더를 창으로 드래그할 때 발생하는 이벤트에 관여하는 함수를 정의한다. 이 함수는 GUI환경에서 커서의 상태와 창에 있는 버튼의 상태를 나타낸다.
 
 
+def inputSelected(draggedFile):
+	global inputFile,working,headerRsc,allFiles,draggedFolderPaths,files
+	resetUI()
+	dummy.focus()
+	status.config(cursor="")
+	status.bind("<Button-1>",lambda e:None)'
+
+
+
+# [Secure-coding-with-python]
+
+## Introduction
+Secure-coding-with-python은 말 그대로 Python을 사용한 시큐어 코딩에 대해 다루고 있다. 이 소스에는 애플리케이션 각 개발 단계에 대응하는 브랜치들이 있다. 이 개발 단계에서 일부러 보안상 취약하도록 구성하고 테스트해 최종적으로 코드를 수정하도록 한다.
+
+## Usage
 
 # [Python-Scripts]
 
