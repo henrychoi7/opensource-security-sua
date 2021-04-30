@@ -9,15 +9,57 @@ Picocrypt은 매우 작고("Pico"), 매우 간단하며 안전한 파일 암호�
 
 -[Picocrypt.py](https://github.com/canon827/Picocrypt/blob/main/src/Picocrypt.py): Picocrypt가 암호화 도구로써 기능하기 위해 주요 기능인 암호화/복호화 기능을 포함한 전반적인 기능을 나타낸 코드이다.
 
-'# [file drag](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L103)inputSelected라는 이름으로  사용자가 파일이나 폴더를 창으로 드래그할 때 발생하는 이벤트에 관여하는 함수를 정의한다. 이 함수는 GUI환경에서 커서의 상태와 창에 있는 버튼의 상태를 나타낸다.
+-[file drag](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L103)
 
+inputSelected라는 이름으로  사용자가 파일이나 폴더를 창으로 드래그할 때 발생하는 이벤트에 관여하는 함수를 정의한다. 이 함수는 GUI환경에서 커서의 상태와 창에 있는 버튼의 상태를 나타낸다.
 
 def inputSelected(draggedFile):
 	global inputFile,working,headerRsc,allFiles,draggedFolderPaths,files
 	resetUI()
 	dummy.focus()
 	status.config(cursor="")
-	status.bind("<Button-1>",lambda e:None)'
+	status.bind("<Button-1>",lambda e:None)
+
+-[exception](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L111)
+
+예외 처리를 하기 위해 try에 실행할 코드를 넣은 부분이다. tmp 변수의 경우, 위에서 정의한 inputSelected의 매개변수 draggedFile에 관한 항목을 모두 출력한다. 또한, within 변수는 False로, 나머지 변수들은 공백으로 초기화 한다.
+
+try:
+		# Create list of input files
+		allFiles = []
+		files = []
+		draggedFolderPaths = []
+		suffix = ""
+		tmp = [i for i in draggedFile]
+		res = []
+		within = False
+		tmpName = ""
+
+-[path](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L135)
+
+for문은 python을 GUI환경으로 구성하는 tkinterdnd2의 파일 가져오기 메서드에 의해 반환된 데이터를 구문 분석한다. 파일 및 폴더를 드래그하면 if~else 문에서 해당 경로를 검증하여 그 경로를 출력 ('draggedFile'매개 변수)
+
+for i in tmp:
+			if i=="{":
+				within = True
+			elif i=="}":
+				within = False
+				res.append(tmpName)
+				tmpName = ""
+			else:
+				if i==" " and not within:
+					if tmpName!="":
+						res.append(tmpName)
+					tmpName = ""
+				else:
+					tmpName += i
+		if tmpName:
+			res.append(tmpName)
+
+		allFiles = []
+		files = []
+
+
 
 
 
