@@ -12,18 +12,19 @@ Picocrypt은 매우 작고("Pico"), 매우 간단하며 안전한 파일 암호�
 -[file drag](https://github.com/henrychoi7/opensource-security-sua/blob/5a67f7e005847ce45b706427668ad9a57701ba6b/canon827/Picocrypt/Picocrypt.py#L103)
 
 inputSelected라는 이름으로  사용자가 파일이나 폴더를 창으로 드래그할 때 발생하는 이벤트에 관여하는 함수를 정의한다. 이 함수는 GUI환경에서 커서의 상태와 창에 있는 버튼의 상태를 나타낸다.
-
+```
 def inputSelected(draggedFile):
 	global inputFile,working,headerRsc,allFiles,draggedFolderPaths,files
 	resetUI()
 	dummy.focus()
 	status.config(cursor="")
 	status.bind("<Button-1>",lambda e:None)
+```
 
 -[exception](https://github.com/henrychoi7/opensource-security-sua/blob/5a67f7e005847ce45b706427668ad9a57701ba6b/canon827/Picocrypt/Picocrypt.py#L111)
 
 예외 처리를 하기 위해 try에 실행할 코드를 넣은 부분이다. tmp 변수의 경우, 위에서 정의한 inputSelected의 매개변수 draggedFile에 관한 항목을 모두 출력한다. 또한, within 변수는 False로, 나머지 변수들은 공백으로 초기화 한다.
-
+```
 try:
 		# Create list of input files
 		allFiles = []
@@ -34,11 +35,11 @@ try:
 		res = []
 		within = False
 		tmpName = ""
-
+```
 -[path](https://github.com/henrychoi7/opensource-security-sua/blob/5a67f7e005847ce45b706427668ad9a57701ba6b/canon827/Picocrypt/Picocrypt.py#L135)
 
 for문은 python을 GUI환경으로 구성하는 tkinterdnd2의 파일 가져오기 메서드에 의해 반환된 데이터를 구문 분석한다. 파일 및 폴더를 드래그하면 if~else 문에서 해당 경로를 검증하여 그 경로를 출력 ('draggedFile'매개 변수)
-
+```
 for i in tmp:
 			if i=="{":
 				within = True
@@ -58,12 +59,12 @@ for i in tmp:
 
 		allFiles = []
 		files = []
-
+```
 
 -[decryption](https://github.com/henrychoi7/opensource-security-sua/blob/5a67f7e005847ce45b706427668ad9a57701ba6b/canon827/Picocrypt/Picocrypt.py#L176)
 
 프로그램 사용자가 원하는 게 암호화인지 복호화인지 결정하는 부분이다. if문의 조건인 inputFile의 확장자명인 .pcv인 경우, 해당 파일을 열어서 tmp[0]에 데이터가 있을 경우, if문에 따라 파일을 끝까지 읽고 fin.seek(138)까지 실행한다. tmp[0]에 데이터가 없을 경우, 맨 뒤에서부터 데이터를 보며 else문을 실행한 다음 ad = fin.read(tmp)까지 실행한다. 
-
+```
 if inputFile.endswith(".pcv"):
 			suffix = " (will decrypt)"
 			fin = open(inputFile,"rb")
@@ -82,11 +83,11 @@ if inputFile.endswith(".pcv"):
 			if not reedsolo:
 				fin.seek(138)
 			ad = fin.read(tmp)
-
+```
 -[encryption](https://github.com/henrychoi7/opensource-security-sua/blob/5a67f7e005847ce45b706427668ad9a57701ba6b/canon827/Picocrypt/Picocrypt.py#L216)
 
 위의 L176부분에서 if문 조건을 충족하지 못했을때 실행되는 else문이며, 파일또는 폴더를 암호화하기 위해 실행시킨 Picocrypt의 UI 구성을 나타내는 코드이다. 암호화하고 싶은 파일 또는 폴더를 잘못 가져왔을 때 초기화하는 Clear 버튼과 비밀번호를 입력하고 그 비밀번호를 한번 더 입력해 확인하는 박스에 대한 UI를 구현하도록 한다.
-
+```
 else:
 			# Update the UI
 			eraseBtn["state"] = "normal"
@@ -104,11 +105,11 @@ else:
 
 		nFiles = len(files)
 		nFolders = len(draggedFolderPaths)
-
+```
 -[start encryption/decryption process](https://github.com/henrychoi7/opensource-security-sua/blob/5a67f7e005847ce45b706427668ad9a57701ba6b/canon827/Picocrypt/Picocrypt.py#L365)
 
 암·복호화 과정을 시작하는 부분이다. start()함수로 정의되어있다. 이 함수 아래로 if~else문을 사용하여 암호화 인지 복호화인지 선택해준다. if문이 암호화, else문이 복호화부분이다. 그 다음, try except문을 활용하여 Picocrypt에 이미 파일이 있는지 확인한다. try문에 파일 크기를 구하는 getsize() 함수를 넣어 force가 1인 아닌 경우 즉, 파일이 존재하는 경우 반환한다.
-
+```
 def start():
 	global inputFile,outputFile,password,ad,kept
 	global working,gMode,headerRsc,allFiles,files
@@ -132,7 +133,7 @@ def start():
 		test.close()
 		if decider=="+":
 			reedsolo = True
-
+```
 
 
 
