@@ -135,6 +135,60 @@ def start():
 			reedsolo = True
 ```
 
+-[Generate values for encryption](https://github.com/henrychoi7/opensource-security-sua/blob/2e154a5265da3ac9241a5db65e77132223d3953a/canon827/Picocrypt/Picocrypt.py#L468)
+
+if문을 통해 암호화 모드일 때, 난수를 생성하는 urandom 함수를 사용하여 salt와 nonce를 정의하고, tmp를 활용해 메타데이터의 길이와 메타데이터를 정의한다. 이 부분에서 암호화시 Reed-Solomon부호를 사용하며 salt생성 시 Argon2암호화 기법을 사용하고 nonce 생성 시 ChaCha20암호화 기법을 사용하는 것을 알 수 있다.
+
+```
+if mode=="encrypt":
+		salt = urandom(16)
+		nonce = urandom(24)
+
+		# Reed-Solomon-encode metadata
+		ad = bytes(headerRsc.encode(ad))
+		# Write the metadata to output
+		tmp = str(len(ad)).encode("utf-8")
+		# Right-pad with "+"
+		while len(tmp)!=10:
+			tmp += b"+"
+		tmp = bytes(headerRsc.encode(tmp))
+		fout.write(tmp) # Length of metadata
+		fout.write(ad) # Metadata (associated data)
+
+		# Write zeros as placeholders, come back to write over it later.
+		# Note that 128 extra Reed-Solomon bytes are added
+		fout.write(b"0"*192) # SHA3-512 of encryption key
+		fout.write(b"0"*192) # CRC of file
+		fout.write(b"0"*144) # Poly1305 tag
+		# Reed-Solomon-encode salt and nonce
+		fout.write(bytes(headerRsc.encode(salt))) # Argon2 salt
+		fout.write(bytes(headerRsc.encode(nonce))) # ChaCha20 nonce
+```
+
+-[Decrypting](https://github.com/henrychoi7/opensource-security-sua/blob/2e154a5265da3ac9241a5db65e77132223d3953a/canon827/Picocrypt/Picocrypt.py#L493)
+
+복호화할 때 파일에서 읽어오는 값 468과 이어지는 else문이다. 지난번에 생성한 메타데이터 실제 데이터를 바꾸기 위해 read 함수를 이용해 파일을 읽어온다. 파일 내용이외에도 솔트, 난수, 다이제스트를 읽어오는 것을 코드에서 확인할 수 있다.
+
+```
+else:
+		# Move past metadata into actual data
+		tmp = fin.read(138)
+		if tmp[0]==43:
+			tmp = tmp[1:]+fin.read(1)
+		tmp = bytes(headerRsc.decode(tmp)[0])
+		tmp = tmp.replace(b"+",b"")
+		adlen = int(tmp.decode("utf-8"))
+		fin.read(int(adlen))
+
+		# Read the salt, nonce, etc.
+		cs = fin.read(192)
+		crccs = fin.read(192)
+		digest = fin.read(144)
+		salt = fin.read(144)
+		nonce = fin.read(152)
+```
+
+
 
 
 

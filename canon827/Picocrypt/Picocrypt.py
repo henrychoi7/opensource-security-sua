@@ -35,7 +35,7 @@ import tkinter.ttk
 import tkinter.scrolledtext
 import webbrowser
 import platform
-from creedsolo import RSCodec,ReedSolomonError
+from reedsolo import RSCodec,ReedSolomonError
 
 # Tk/Tcl is a little barbaric, so I'm disabling
 # high DPI so it doesn't scale bad and look horrible
@@ -480,7 +480,7 @@ def start():
 		tmp = bytes(headerRsc.encode(tmp))
 		fout.write(tmp) # Length of metadata
 		fout.write(ad) # Metadata (associated data)
-
+		
 		# Write zeros as placeholders, come back to write over it later.
 		# Note that 128 extra Reed-Solomon bytes are added
 		fout.write(b"0"*192) # SHA3-512 of encryption key
