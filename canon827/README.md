@@ -167,7 +167,7 @@ if mode=="encrypt":
 
 -[Decrypting](https://github.com/henrychoi7/opensource-security-sua/blob/2e154a5265da3ac9241a5db65e77132223d3953a/canon827/Picocrypt/Picocrypt.py#L493)
 
-복호화할 때 파일에서 읽어오는 값 468과 이어지는 else문이다. 지난번에 생성한 메타데이터 실제 데이터를 바꾸기 위해 read 함수를 이용해 파일을 읽어온다. 파일 내용이외에도 솔트, 난수, 다이제스트를 읽어오는 것을 코드에서 확인할 수 있다.
+복호화할 때 파일에서 읽어오는 값 468과 이어지는 else문이다. 지난번에 생성한 메타데이터를 실제 데이터로 바꾸기 위해 read 함수를 이용해 파일을 읽어온다. 파일 내용이외에도 솔트, 난수, 다이제스트를 읽어오는 것을 코드에서 확인할 수 있다.
 
 ```
 else:
@@ -187,6 +187,68 @@ else:
 		salt = fin.read(144)
 		nonce = fin.read(152)
 ```
+-[Key Derivation](https://github.com/henrychoi7/opensource-security-sua/blob/2e154a5265da3ac9241a5db65e77132223d3953a/canon827/Picocrypt/Picocrypt.py#L549)
+
+키 유도(key derivation)와 관련된 부분이다. 키 유도 함수란, 마스터키나 비밀 정보로부터 해당 시스템이나 네트워크의 암복호화에 필요한 암호 키들을 유도하는 함수를 말한다. 위 코드 부분에서는 arog2에 대한 키를 구성하는 패스워드, 솔트, 해시 길이 등을 정의하고 있다. 또한 유도된 키의 해시값을 계산하는 부분도 구현되어 있다.
+```
+# Show notice about key derivation
+	statusString.set(derivingNotice)
+
+	# Derive argon2id key
+	key = hash_secret_raw(
+		password,
+		salt,
+		time_cost=8, # 8 iterations
+		memory_cost=2**20, # 2^20 Kibibytes (1GiB)
+		parallelism=8, # 8 parallel threads
+		hash_len=32,
+		type=Type.ID
+	)
+
+	# Key deriving done, set progress bar determinate
+	progress.stop()
+	progress.config(mode="determinate")
+	progress["value"] = 0
+
+	# Compute hash of derived key
+	check = sha3_512.new()
+	check.update(key)
+	check = check.digest()
+```
+
+-[EOF](https://github.com/henrychoi7/opensource-security-sua/blob/2e154a5265da3ac9241a5db65e77132223d3953a/canon827/Picocrypt/Picocrypt.py#L609)
+EOF인 경우를 나타내는 코드로써 EOF란, 파일의 끝(end of file)을 의미한다. if문에서는 암호화과정과 관련된 MAC tag를 삽입, 오프셋을 계산하며 키, CRC의 해시값을 적는다. else문에서는 CRC를 검증하는 코드가 구현되어 있다.
+
+```
+# If EOF
+		if not piece:
+			if mode=="encrypt":
+				# Get the cipher MAC tag (Poly1305)
+				digest = cipher.digest()
+				fout.flush()
+				fout.close()
+				fout = open(outputFile,"r+b")
+				# Compute the offset and seek to it (unshift "+")
+				rsOffset = 1 if reedsolo else 0
+				fout.seek(138+len(ad)+rsOffset)
+				# Write hash of key, CRC, and Poly1305 MAC tag
+				fout.write(bytes(headerRsc.encode(check)))
+				fout.write(bytes(headerRsc.encode(crc.digest())))
+				fout.write(bytes(headerRsc.encode(digest)))
+			else:
+				# If decrypting, verify CRC
+				crcdg = crc.digest()
+				if not compare_digest(crccs,crcdg):
+					# File is corrupted
+					statusString.set(corruptedNotice)
+					progress["value"] = 100
+					fin.close()
+					fout.close()
+```
+
+-[CHECKSUM](https://github.com/henrychoi7/opensource-security-sua/blob/2e154a5265da3ac9241a5db65e77132223d3953a/canon827/Picocrypt/Picocrypt.py#L666)
+암호화 부분은 if문으로 처리하며 리스트 형식으로 분할한 부분을 python 모듈을 이용해 암호화 한다. 이때, CRC(=체크섬)을 업데이트하고 사용자가 Reed-Solomon 부호를 사용할 경우는 if문으로 처리한다. 체크섬이란, 중복 검사의 한 형태로 데이터의 무결성을 보호해준다.
+또한, 복호화 부분은 아래 else문으로 처리했는데 try~except문을 활용해 파일이 출동할 경우나 파일이 검사되지 않은 경우를 처리하고 있다.
 
 
 
