@@ -250,6 +250,79 @@ EOF인 경우를 나타내는 코드로써 EOF란, 파일의 끝(end of file)을
 암호화 부분은 if문으로 처리하며 리스트 형식으로 분할한 부분을 python 모듈을 이용해 암호화 한다. 이때, CRC(=체크섬)을 업데이트하고 사용자가 Reed-Solomon 부호를 사용할 경우는 if문으로 처리한다. 체크섬이란, 중복 검사의 한 형태로 데이터의 무결성을 보호해준다.
 또한, 복호화 부분은 아래 else문으로 처리했는데 try~except문을 활용해 파일이 출동할 경우나 파일이 검사되지 않은 경우를 처리하고 있다.
 
+-[Calculate speed](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L719)
+속도를 계산하는 코드로써 예상 완료 시간을 나타낸다. 이를 위해 time 모듈을 이용했으며 if~else문을 활용해 초,분단위로 시간을 측정하는 부분을 구현한다.
+
+```
+# Calculate speed, ETA, etc.
+		elapsed = (datetime.now()-previousTime).total_seconds() or 0.0001
+		sinceStart = (datetime.now()-startTime).total_seconds() or 0.0001
+		previousTime = datetime.now()
+
+		percent = done*100/total
+		progress["value"] = percent
+
+		speed = (done/sinceStart)/10**6 or 0.0001
+		eta = round((total-done)/(speed*10**6))
+```
+
+-[Secure delete](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L763)
+Picocrypt를 실행시켰을때 'Securely erase and delete original file'체크박스와 연관된 부분이다. 이 부분의 코드는 보안 삭제(Secure Delete, Wiping)로써, 중요한 파일을 복구할 수 없도록 하기 위해서 사용한다. secureWipe함수를 정의한 L853에서도 sdelete64.exe를 확인할 수 있다.
+
+```
+if wipe:
+		if draggedFolderPaths:
+			for i in draggedFolderPaths:
+				secureWipe(i)
+		if files:
+			for i in range(len(files)):
+				statusString.set(erasingNotice+f" ({i}/{len(files)}")
+				progress["value"] = i/len(files)
+				secureWipe(files[i])
+		secureWipe(inputFile)
+```
+
+-[MODIFIY](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L780)
+파일이 만약 변조되었거나 변경된 경우 적절한 메시지를 띄우도록 하는 코드 부분이다. False로 규정된 변수 kept가 if문에서 not 조건일 때 성공적으로 결과물이 나왔다는 메시지를 띄운다. 그리고 else문에서 변경되었을 때, 변조되었을 때 그리고 그 나머지 경우에 대한 조건을 지정한다.
+```
+if not kept:
+		statusString.set(f"Completed. (Click here to show output)")
+
+		# Show Reed-Solomon stats if it fixed corrupted bytes
+		if mode=="decrypt" and reedsolo and reedsoloFixedCount:
+			statusString.set(
+				f"Completed with {reedsoloFixedCount}"+
+				f" bytes fixed. (Output: {output})"
+			)
+	else:
+		if kept=="modified":
+			statusString.set(kModifiedNotice)
+		elif kept=="corrupted":
+			statusString.set(kCorruptedNotice)
+		else:
+			statusString.set(kVeryCorruptedNotice)
+```
+
+-[Decorator](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L827)
+에러를 처리하는 start()함수를 try~except문으로 코드를 작성한다. 여기서 함수 wrapper()은 호출할 함수를 감싸는 함수다. 그리고 그 아래 try~except문으로 코드를 작성한다.  아래 848번째 줄의 startWorker()함수는 이와 연관된 데코레이터 함수이다. 데코레이터란, 함수를 수정하지 않은 상태에서 추가 기능을 구현할 때 사용한다.
+```
+def wrapper():
+	global working,gMode
+	# Try start() and handle errors
+	try:
+		start()
+	except:
+		# Reset UI accordingly
+
+		if gMode=="decrypt":
+			resetDecryptionUI()
+		else:
+			resetEncryptionUI()
+
+		statusString.set(unknownErrorNotice)
+		dummy.focus()
+```
+
 
 
 
