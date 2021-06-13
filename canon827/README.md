@@ -322,6 +322,38 @@ def wrapper():
 		statusString.set(unknownErrorNotice)
 		dummy.focus()
 ```
+-[disabled](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L877)
+암호화/복호화 과정 중에는 다른 입력이 불가능하도록 disableAllInputs() 함수로 정의한다. picocrypt UI에서 확인할 수 있는 Password, Comfirm password 등의 항목들을 disabled로 처리한다.
+```
+# Disable all inputs while encrypting/decrypting
+def disableAllInputs():
+	passwordInput["state"] = "disabled"
+	cpasswordInput["state"] = "disabled"
+	adArea["state"] = "disabled"
+	startBtn["state"] = "disabled"
+	eraseBtn["state"] = "disabled"
+	keepBtn["state"] = "disabled"
+	rsBtn["state"] = "disabled"
+```
+
+-[Reset](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L887)
+picocrypt에서 데이터를 입력받을 수 있는 각각의 항목들의 상태를 "normal"로 정의하여 리셋하는 코드 부분이다. 이 부분의 코드부터 암호화과정 후 리셋하는 함수, 복호화과정 후 리셋하는 함수, 그리고 초기 상태로 리셋하는 함수가 정의되어 있다. 
+```
+# Reset UI to encryption state
+def resetEncryptionUI():
+	global working
+	passwordInput["state"] = "normal"
+	cpasswordInput["state"] = "normal"
+	adArea["state"] = "normal"
+	startBtn["state"] = "normal"
+	eraseBtn["state"] = "normal"
+	rsBtn["state"] = "normal"
+	working = False
+	progress.stop()
+	progress.config(mode="determinate")
+	progress["value"] = 100
+```
+
 
 
 
