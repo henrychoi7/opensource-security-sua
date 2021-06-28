@@ -354,9 +354,55 @@ def resetEncryptionUI():
 	progress["value"] = 100
 ```
 
+이 스크립트에서 쓰인 모듈이 가진 기능을 좀 더 명확하게 알아보기 위해 하나의 모듈만 쓰인 간단한 예제를 참조해서 코드를 작성했다. 그리고 해당 코드를 디버깅했을 때 어떤 결과가 나타나는 지 알아보았다.
 
+-[crypto.hash module](https://github.com/henrychoi7/opensource-security-sua/blob/ca63e46ed518645c3f5bb1370c4c590f68c50ab8/canon827/Picocrypt/Picocrypt.py#L21)
 
+Crypto.Hash 모듈의 동작을 알아보기 위해 참고했던 코드는 다음과 같다. 
+```
+from Crypto.Hash import SHA512
 
+h = SHA512.new()
+h.update(b'Hello')
+print(h.hexdigest())
+```
+Crypto.Hash 모듈에서 SHA-512 구현하는 클래스를 호출합니다. 그리고 new로 해시 객체의 새로운 인스턴스를 반환합니다. update를 활용해 Hello 데이터를 입력하고 메시지의 512비트 다이제스트를 출력합니다. 위 코드를 실행시켰을 때 결과는 다음과 같습니다. 데이터 Hello을 입력했을때 출력되는 다이제스트를 확인할 수 있습니다. 
+
+>C:\Users\YGH\sua-osp\test>python test.py                   
+>3615f80c9d293ed7402687f94b22d58e529b8cc7916f8fac7fddf7fbd5af4cf777d3d795a7a00a16bf7e7f3fb9561ee9baae480da9fe7a18769e71886b03f315
+
+-[Crypto Cipher module](https://github.com/henrychoi7/opensource-security-sua/blob/ca63e46ed518645c3f5bb1370c4c590f68c50ab8/canon827/Picocrypt/Picocrypt.py#L20)
+
+Crypto Cipher모듈은 대칭 및 비대칭 키 암호화 알고리즘으로 키 또는 키 쌍에 의존하는 방식으로 일반 텍스트를 변환하여 암호문을 생성한다. 이와 관련한 예제는 다음과 같다 
+
+```
+import json
+
+from base64 import b64encode
+from Crypto.Cipher import ChaCha20
+from Crypto.Random import get_random_bytes
+
+plaintext = b'open source security by SUA'
+
+key = get_random_bytes(32)
+nonce = get_random_bytes(8)
+
+cipher = ChaCha20.new(key=key, nonce=nonce)
+
+ciphertext = cipher.encrypt(plaintext)
+
+nonce = b64encode(cipher.nonce).decode('utf-8')
+ct = b64encode(ciphertext).decode('utf-8')
+
+result = json.dumps({'nonce':nonce, 'ciphertext':ct})
+
+# {"nonce": "IZScZh28fDo=", "ciphertext": "ZatgU1f30WDHriaN8ts="}
+print(result)
+```
+Crypto.Cipher모듈에서 ChaCha20 방식으로 데이터를 암호화 하고자할 때 예시는 위와 같습니다. 위 코드를 보면 암호화할 때 사용되는 key는 32바이트 크기이고 ChaCha20의 경우 nonce는 8바이트 또는 12바이트 크기인 것을 알 수 있습니다. 또한 ChaCha20객체로 plaintext를 암호화하고 nonce와 암호화된 텍스트를 base64로 인코딩하고 UTF로 디코딩합니다. 위 예제의 result 값은 다음과 같습니다.
+
+>C:\Users\YGH\sua-osp\test>python test2.py                      
+>{"nonce": "Ag+kbEEryYY=", "ciphertext": "mr2tAraSIGXoyYvCEXjX5yxAhGFPthPPOcFu"}
 
 
 # [Secure-coding-with-python]
