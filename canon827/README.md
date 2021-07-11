@@ -384,106 +384,86 @@ from Crypto.Random import get_random_bytes
 
 plaintext = b'open source security by SUA'
 
+# ChaCha20.new()에 들어갈 랜덤 바이트 만들기 (32바이트 짜리)
 key = get_random_bytes(32)
-nonce = get_random_bytes(8)
 
-cipher = ChaCha20.new(key=key, nonce=nonce)
+# ChaCha20 객체 만들기 (nonce는 선안하지 않아서 자동으로 8바이트 짜리 생성됨)
+cipher = ChaCha20.new(key=key)
 
+# ChaCha20 객체로 plaintext 암호화하기
 ciphertext = cipher.encrypt(plaintext)
 
+# nonce와 암호화된 텍스트를 base64로 인코딩하고 UTF로 디코딩
 nonce = b64encode(cipher.nonce).decode('utf-8')
 ct = b64encode(ciphertext).decode('utf-8')
 
+# 결과 정리
 result = json.dumps({'nonce':nonce, 'ciphertext':ct})
 
 # {"nonce": "IZScZh28fDo=", "ciphertext": "ZatgU1f30WDHriaN8ts="}
 print(result)
 ```
-Crypto.Cipher모듈에서 ChaCha20 방식으로 데이터를 암호화 하고자할 때 예시는 위와 같습니다. 위 코드를 보면 암호화할 때 사용되는 key는 32바이트 크기이고 ChaCha20의 경우 nonce는 8바이트 또는 12바이트 크기인 것을 알 수 있습니다. 또한 ChaCha20객체로 plaintext를 암호화하고 nonce와 암호화된 텍스트를 base64로 인코딩하고 UTF로 디코딩합니다. 위 예제의 result 값은 다음과 같습니다.
+Crypto.Cipher모듈에서 ChaCha20 방식으로 데이터를 암호화 하고자할 때 예시는 위와 같다. 위 코드를 보면 암호화할 때 사용되는 key는 32바이트 크기이고 ChaCha20의 경우 nonce는 8바이트 또는 12바이트 크기인 것을 알 수 있다. 또한, ChaCha20객체로 plaintext를 암호화하고 nonce와 암호화된 텍스트를 base64로 인코딩하고 UTF로 디코딩한다. 위 예제의 result 값은 다음과 같다.
 
 >C:\Users\YGH\sua-osp\test>python test2.py                      
 >{"nonce": "Ag+kbEEryYY=", "ciphertext": "mr2tAraSIGXoyYvCEXjX5yxAhGFPthPPOcFu"}
 
-
-# [Secure-coding-with-python]
-
-## Introduction
-Secure-coding-with-python은 말 그대로 Python을 사용한 시큐어 코딩에 대해 다루고 있다. 이 소스에는 애플리케이션 각 개발 단계에 대응하는 브랜치들이 있다. 이 개발 단계에서 일부러 보안상 취약하도록 구성하고 테스트해 최종적으로 코드를 수정하도록 한다.
-
-## Usage
-
-# [Python-Scripts]
-
-## Introduction
-개인이 침투테스트와 자동화를 위해 모아놓은 Python Script다. 해시값을 크랙하는 간단한 도구나 키로거 공격, 사전 공격을 가능하게 하는 스크립트, 간이포트 스캐너와 같은 침투 테스트를 위한 다양한 스크립트가 있다. 
-
-
-
-# [오픈소스 이름]
-
-## Introduction
-예) Bandit은 Python 코드에서 일반적인 보안 취약점을 찾기 위해 설계된 도구다. 이를 위해 Bandit은 각 파일을 처리하고, 파일로부터 AST를 빌드하고, AST 노드에 대해 적절한 플러그인을 실행한다. Bandit이 모든 파일 스캔을 마치면 보고서를 생성하게 된다.
-
-## Usage or Analysis
-예1) 코드 트리에서 사용 예시는 아래와 같다.
+또한, Crypto.Cipher모듈에서 ChaCha20 방식으로 복호화하기 위해서는 암호화 과정을 바꿔서 진행하면 되는데 이를 위해 암호화한 JSON 결과 값을 base64형식으로 변환한다. 그리고 난수와 암호문에 들어간 값을 다시 base64로 디코딩하고 ChaCha20 객체를 생성해서 암호문을 복호화하면 된다.
 
 ```
-bandit -r ~/your_repos/project
-```
+import json
 
-`examples` 디렉터리에서 심각도가 높은 취약점에 대해서 보고하고 세 줄의 컨텍스트를 표시하는 예시는 아래와 같다.
+from base64 import b64encode, b64decode
+from Crypto.Cipher import ChaCha20
+from Crypto.Random import get_random_bytes
 
-```
-bandit examples/*.py -n 3 -lll
-```
+plaintext = b'open source security by SUA'
 
-예2) 이 모듈은 아래의 디렉터리로 구성된다.
+key = get_random_bytes(32)
+# 8 바이트 또는 12 바이트
+nonce = get_random_bytes(8)
 
-[파일 트리 이미지]
+cipher = ChaCha20.new(key=key, nonce=nonce)
 
-- [install-vault](https://github.com/henrychoi7/opensource-security-sua): 이 모듈은 Vault를 설치하는 데 사용할 수 있다. 그리고 Packer 템플릿에서 Vault Amazon 머신 이미지 (AMI)를 생성하는 데 사용할 수도 있다.
+# ChaCha20 객체로 plaintext 암호화하기
+ciphertext = cipher.encrypt(plaintext)
 
-- [run-vault](https://github.com/henrychoi7/opensource-security-sua): 이 모듈은 Vault를 구성하고 실행하는 데 사용할 수 있다. 서버가 부팅되는 동안 Vault를 시작하기 위해 사용자 데이터 스크립트를 사용하는 기능도 있다.
+# nonce와 암호화된 텍스트를 base64로 인코딩하고 UTF로 디코딩
+nonce = b64encode(cipher.nonce).decode('utf-8')
+ct = b64encode(ciphertext).decode('utf-8')
 
-- [vault-cluster](https://github.com/henrychoi7/opensource-security-sua): Auto Scaling Group을 사용하여 Vault 서버 클러스터를 배포하기 위한 Terraform 코드다.
+# 결과 정리
+result = json.dumps({'nonce':nonce, 'ciphertext':ct})
 
-### install-vault
-[주요 파일 분석]
+# {"nonce": "IZScZh28fDo=", "ciphertext": "ZatgU1f30WDHriaN8ts="}
+print(result)
 
-```
-function assert_either_or {
-  local -r arg1_name="$1"
-  local -r arg1_value="$2"
-  local -r arg2_name="$3"
-  local -r arg2_value="$4"
+# 복호화 시작
+try:
+    # result에는 위에서 암호화한 JSON 결과 값이 들어감
+    b64 = json.loads(result)
 
-  if [[ -z "$arg1_value" && -z "$arg2_value" ]]; then
-    log_error "Either the value for '$arg1_name' or '$arg2_name' must be passed, both cannot be empty"
-    print_usage
-    exit 1
-  fi
-}
-
-# 명령을 여러 번 실행하려고 시도하고 출력을 반환하는 재귀 함수
-function retry {
-  local -r cmd="$1"
-  local -r description="$2"
-
-  for i in $(seq 1 5); do
-    log_info "$description"
+    # nonce와 ciphertext에 들어간 값을 다시 base64 디코딩
+    nonce = b64decode(b64['nonce'])
+    ciphertext = b64decode(b64['ciphertext'])
     
-    # 종료 상태가 있는 boolean 연산은 종료 상태 코드를 잃지 않고 오류 상태를 위해 즉시 스크립트를 종료하는 이 스크립트의 시작 부분에 있는 "set -e"를 일시적으로 우회한다.
-    output=$(eval "$cmd") && exit_status=0 || exit_status=$?
-    log_info "$output"
-    if [[ $exit_status -eq 0 ]]; then
-      echo "$output"
-      return
-    fi
-    log_warn "$description failed. Will sleep for 10 seconds and try again."
-    sleep 10
-  done;
+    # ChaCha20 객체 만들기
+    cipher = ChaCha20.new(key=key, nonce=nonce)
 
-  log_error "$description failed after 5 attempts."
-  exit $exit_status
-}
+    # ChaCha20 객체로 ciphertext 복호화하기
+    plaintext = cipher.decrypt(ciphertext)
+
+    # open source security by SUA가 출력됨
+    print("The message was " + plaintext)
+    
+except (ValueError, KeyError) as variable:
+    print("Incorrect decryption")
 ```
+
+이외에도 자주 쓰이는 암호화 알고리즘 몇 가지를 정리하면 다음과 같다. 
+
+-AES 암호화 알고리즘이란 고급 암호화 표준이라고 불리며, DES 암호화 알고리즘을 대체한 암호화와 복호화 과정에서 동일한 키를 사용하는 대칭 키 암호화 알고리즘이다. 이 알고리즘은 가변 길이의 블록과 가변 길이의 키 사용이 가능한 것이 특징이다.(128bit, 192bit, 256bit) 또한, 속도와 코드 효율성 면에서 효율적이다. 
+
+
+
+
