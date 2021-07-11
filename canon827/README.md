@@ -304,7 +304,7 @@ if not kept:
 ```
 
 -[Decorator](https://github.com/canon827/Picocrypt/blob/7325b65e03204badb9cee320fc899ff1f890594e/src/Picocrypt.py#L827)
-에러를 처리하는 start()함수를 try~except문으로 코드를 작성한다. 여기서 함수 wrapper()은 호출할 함수를 감싸는 함수다. 그리고 그 아래 try~except문으로 코드를 작성한다.  아래 848번째 줄의 startWorker()함수는 이와 연관된 데코레이터 함수이다. 데코레이터란, 함수를 수정하지 않은 상태에서 추가 기능을 구현할 때 사용한다.
+에러를 처리하는 start()함수를 try,except문으로 코드를 작성한다. 여기서 함수 wrapper()은 호출할 함수를 감싸는 함수다. 그리고 그 아래 try,except문으로 코드를 작성한다.  아래 848번째 줄의 startWorker()함수는 이와 연관된 데코레이터 함수이다. 데코레이터란, 함수를 수정하지 않은 상태에서 추가 기능을 구현할 때 사용한다.
 ```
 def wrapper():
 	global working,gMode
@@ -460,9 +460,7 @@ except (ValueError, KeyError) as variable:
     print("Incorrect decryption")
 ```
 
-이외에도 자주 쓰이는 암호화 알고리즘 몇 가지를 정리하면 다음과 같다. 
 
--AES 암호화 알고리즘이란 고급 암호화 표준이라고 불리며, DES 암호화 알고리즘을 대체한 암호화와 복호화 과정에서 동일한 키를 사용하는 대칭 키 암호화 알고리즘이다. 이 알고리즘은 가변 길이의 블록과 가변 길이의 키 사용이 가능한 것이 특징이다.(128bit, 192bit, 256bit) 또한, 속도와 코드 효율성 면에서 효율적이다. 
 
 
 
