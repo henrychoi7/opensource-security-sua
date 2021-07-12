@@ -202,6 +202,61 @@ if ( (fp= pcap_open(source,			// name of the device
 
 pcap_loop() 함수 - 라이브 캡처 또는 저장 파일에서 패킷을 처리하는 함수이다. 
 
+- basic_dump.c : 만들어진 덤프파일에서 네트워크 패킷을 추출하는 소스코드이다.
+
+```
+void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data);
+```
+
+위 소스코드는 pcap 라이브러리에서 네트워크 패킷이 도착하면 호출해 주는 함수의 프로토타입으로, 패킷이 도착하면 'packet_handler()'라는 함수가 콜백으로 호출된다. 
+
+```
+if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
+	{
+		fprintf(stderr,"Error in pcap_findalldevs: %s\n", errbuf);
+		exit(1);
+	}
+  ```
+  
+  pcap_findalldevs() 함수는 시스템이 가지고 있는 모든 네트워크 인터페이스에 대한 정보를 연결된 List형태로 생성하여 List의 첫번째 노드의 주소를 첫번째 인자에 넣어 반환해준다.
+       
+
+```
+if(inum < 1 || inum > i)
+	{
+		printf("\nInterface number out of range.\n");
+		/* Free the device list */
+		pcap_freealldevs(alldevs);
+		return -1;
+	}
+  ```
+  사용할 인터페이스의 이름을 입력받고 inum 변수에 그 값을 할당한다. 할당한 후, pcap_freealldevs() 함수를 이용하여 장치 목록을 해제하고, allldevs가 가리키는 장치 목록을 해제한다. 반환할 값이 없어도 -1의 값을 반환한다. 
+  
+```
+void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
+{
+	struct tm ltime;
+	char timestr[16];
+	time_t local_tv_sec;
+
+	/*
+	 * unused variables
+	 */
+	(VOID)(param);
+	(VOID)(pkt_data);
+
+	/* convert the timestamp to readable format */
+	local_tv_sec = header->ts.tv_sec;
+	localtime_s(&ltime, &local_tv_sec);
+	strftime( timestr, sizeof timestr, "%H:%M:%S", &ltime);
+	
+	printf("%s,%.6d len:%d\n", timestr, header->ts.tv_usec, header->len);
+	
+}
+```
+
+위 소스코드는 winpcap과 관계 없는 유닉스 환경에서만 시간을 출력하고 패킷의 길이를 출력해주는 부분이다. 
+
 
 
 
