@@ -336,6 +336,81 @@ if (res == -1)
   pcap_findalldevs_ex() 함수는 캡처 장치 목록을 가져오거나 해당 목록을 해제할 때 쓰는 함수이다. 위의 코드는 네트워크 어뎁터 목록을 탐지하고 그 결과를 화면에 표시하고 어뎁터를 찾지 못한 경우 오류를 알려주는 소스코드이다. pcap_findalldevs_ex () 함수에는 'errbuf'라는 매개 변수가 있다. 이 매개 변수는 오류가 발생한 경우 오류에 대한 설명을 표시해준다. 
   
   
+  
+  - SUA 오픈소스 보안 프로젝트 : 멘토님께서 알려주신 pcap 라이브러리를 이용한 예제 소스코드이다.
+
+```
+#include <stdio.h>
+ #include <pcap.h>
+
+ int main(int argc, char *argv[])
+{
+    char *dev = argv[1];
+    
+   printf("Device: %s\n", dev);
+   return (0);
+}
+
+```
+
+위의 소스코드는 디바이스의 이름을 설정하는 소스코드이다. dev 변수에 디바이스 인자값 하나를 할당한다.
+
+```
+#include <stdio.h>
+#include <pcap.h>
+
+int main(int argc, char *argv[])
+{
+   char *dev, errbuf[PCAP_ERRBUF_SIZE];
+
+   dev = pcap_lookupdev(errbuf);
+    if (dev == NULL)
+    {
+       fprintf(stderr, "Couldn't find default device: %s\n", errbuf);
+       return (2);
+    }
+    printf("Device: %s\n", dev);
+
+
+   return (0);
+ }
+
+```
+
+위 소스코드는 pcap_lookupdev() 함수로 기본 디바이스 즉, 시스템의 첫 번째 유효한 디바이스의 정보를 가지고 오는 소스코드이다.
+
+```
+#include <stdio.h>
+#include <pcap.h>
+
+int main(int argc, char* argv[])
+{
+    pcap_t* handle;
+
+    char* dev, errbuf[PCAP_ERRBUF_SIZE];
+
+    dev = pcap_lookupdev(errbuf);
+    if (dev == NULL)
+    {
+        fprintf(stderr, "Couldn't find default device: %s\n", errbuf);
+        return (2);
+    }
+    printf("Device: %s\n", dev);
+
+    handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
+    if (handle == NULL)
+    {
+        fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
+        return (2);
+    }
+    return (0);
+}
+
+```
+
+위의 소스코드는 main 구문으로, pcap_open_live() 함수로 네트워크로부터 실시간 패킷을 캡쳐하는 과정을 나타낸다.
+  
+  
 
 
 
