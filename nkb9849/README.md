@@ -257,17 +257,45 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 
 위 소스코드는 winpcap과 관계 없는 유닉스 환경에서만 시간을 출력하고 패킷의 길이를 출력해주는 부분이다. 
 
+- sendpcap.c - 패킷을 보내는 소스코드이다. 
 
+```	
+if (pcap_datalink(indesc) != pcap_datalink(outdesc))
+	{
+		printf("Warning: the datalink of the capture differs from the one of the selected interface.\n");
+		printf("Press a key to continue, or CTRL+C to stop.\n");
+		getchar();
+	}
+```
 
+위의 소스코드는 MAC의 유형을 확인하는 소스코드로, 캡쳐한 인터페이스의 데이터 링크가 선택한 인터페이스의 데이터 링크와 다른지 비교 분석하는 구문이다. 
 
+pcap_datalink()함수 - 어댑터의 링크 계층을 반환한다.
 
+```
+squeue = pcap_sendqueue_alloc(caplen);
 
+```
+위의 소스코드는 전송 큐를 할당하는 소스코드이다. 
 
+pcap_sendqueue_alloc() 함수 - 전송 큐를 할당하는 함수로, 전송 대기열(pcap_sendqueue_transmit()) 함수를 사용하여 네트워크에서 전송될 원시 패킷 집합을 포함하는 버퍼를 할당하는 역할을 수행하는 함수이다.
 
+pcap_sendqueue_queue() 함수를 사용하여 대기열에 패킷을 삽입하는 역할을 수행하는 함수이다.
 
+```
 
-
-
+if (res == -1)
+	{
+		printf("Corrupted input file.\n");
+		pcap_sendqueue_destroy(squeue);
+		return;
+	}
+  
+  ```
+  위의 소스코드는 파일의 패킷으로 채워진 큐를 나타내는 변수인 'res'값이 -1이면 전송 큐를 제거하는 소스코드이다. 
+  
+  pcap_sendqueue_destroy(squeue) 함수 - 큐에 전송되고 있는 파일의 패킷을 제거하는 함수이다. 패킷 보내기 대기열을 삭제하고 연결된 모든 메모리를 해제한다. 
+  
 
 -udpdump.c : udp 패킷을 탐지하고 탐지된 패킷의 네트워크 포트 상태를 점검하는 코드이다.
 ```
