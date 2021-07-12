@@ -117,6 +117,90 @@ pcap_if 구조는 다음과 같다.
 
 위의 내용을 간략하게 정리하자면 해당 인터페이스의 주소 목록, 넷마스크 목록, 브로드캐스트 주소 목록, 대상 주소 목록, pcap_findalldevs_ex() 함수로 지정된 로컬 폴더에 있는 원격 어댑터 및 pcap 파일 목록을 반환할 수 있다.
 
+- readme.c - 덤프 파일에서 패킷을 읽어들이는 소스코드이다. 덤프를 한 파일이 존재한다면, 그 내용을 읽을 수 있다. 이 소스코드는 Npcap/libpcap 덤프 파일을 열고 파일에 포함된 모든 패킷을 표시한다. 
+파일은 pcap_open_offline()함수를 이용하여 연 다음 일반적인 pcap_loop() 함수를 사용하여 패킷을 시퀀싱한다.
+
+```
+void dispatcher_handler(u_char *, const struct pcap_pkthdr *, const u_char *);
+```
+
+pcap 라이브러리에서 덤프파일을 호출해주는 함수의 프로토타입이다.  
+
+```
+if ( pcap_createsrcstr(	source,			// variable that will keep the source string
+							PCAP_SRC_FILE,	// we want to open a file
+							NULL,			// remote host
+							NULL,			// port on the remote host
+							argv[1],		// name of the file we want to open
+							errbuf			// error buffer
+							) != 0)
+	{
+		fprintf(stderr,"\nError creating a source string\n");
+		return -1;
+	}
+  
+  ```
+  
+  pcap_createsrcstr() 함수 - Npcap에 소스 유형을 알려주는데 사용되는 함수로 시작하는 소스 문자열을 생성하는 데 필요하다. 
+ 호스트 이름, 포트 등의 일련의 문자열을 수락하면 새 형식(예: 'rpcap://1.2.3.4/eth0')에 따라 전체 소스 문자열을 반환한다. 
+ 해당 함수의 파라미터는 다음과 같다.
+ 
+>source : 함수가 반환하는 소스 문자열을 포함할 사용자 할당 버퍼, 새로운 소스 사양 구문에 따라 식별자로 시작한다. 할당된 버퍼가 PCAP_BUF_SIZE 바이트 이상이라고 가정한다.
+ 
+>type : 	만들고자 하는 소스의 유형을 알려준다. 
+
+>host : 연결하려는 호스트를 유지하는 사용자 할당 버퍼. 로컬 호스트에서 인터페이스를 열려면 NULL일 수 있다.
+
+>port : RPCAP 프로토콜에 사용하려는 네트워크 포트를 유지하는 사용자 할당 버퍼. 로컬 호스트에서 인터페이스를 열려면 NULL일 수 있다.
+
+>name : 사용하려는 인터페이스 이름을 유지하는 사용자 할당 버퍼(예: "eth3"). 
+
+>error : 오류 메시지(있는 경우)를 포함할 사용자 할당 버퍼(PCAP_ERRBUF_SIZE 크기)에 대한 포인터.
+
+해당 함수는 모든 것이 정상이면 '0', 일부 오류가 발생하면 '-1'. 완전한 source를 포함하는 문자열은 'source' 변수에 반환된다.
+
+```
+if ( (fp= pcap_open(source,			// name of the device
+						65536,			// portion of the packet to capture
+										// 65536 guarantees that the whole packet will be captured on all the link layers
+						 PCAP_OPENFLAG_PROMISCUOUS, 	// promiscuous mode
+						 1000,				// read timeout
+						 NULL,				// authentication on the remote machine
+						 errbuf			// error buffer
+						 ) ) == NULL)
+	{
+		fprintf(stderr,"\nUnable to open the file %s.\n", source);
+		return -1;
+	}
+  ```
+  
+  위의 소스코드는 캡쳐한 덤프 파일을 호출하는 소스코드이다. 
+  pcap_open() 함수 - 캡처한 덤프파일을 열 때 사용하는 함수로, 모든 pcap_open_xxx() 함수들의 기능을 대체할 수 있다. 
+  pcap_open() 함수 대신 pcap_open_live() 함수로도 대체가 가능하지만, 권한이 없는 관리자가 파일을 열 수 없게 하기 위해 pcap_open() 함수를 사용한 것 같다.
+  pcap_open() 함수의 파라미터는 다음과 같다.
+  
+  >source : 사용할 디바이스의 이름을 결정하는 파라미터이다. 
+  
+  >snalpen : 캡처할 최대 바이트 수를 지정합니다. 이 값이 캡처된 패킷의 크기보다 작으면 해당 패킷의 첫 번째 snaplen 바이트만 캡처되어 패킷 데이터로 제공된다. 
+  '65535' 값은 모든 네트워크는 아니지만 대부분의 네트워크에서 패킷에서 사용 가능한 모든 데이터를 캡처하기에 충분해야 한다.
+  
+  >promisc : 인터페이스가 무차별 모드로 전환되는지 여부를 지정한다. "any"에서 작동하지 않습니다. "any" 또는 NULL의 인수가 제공되면 promisc 플래그는 무시된다.
+  
+  >to_ms : 읽기 제한 시간을 ms(밀리세컨드) 단위로 지정하는 파라미터이다. 
+  
+  > errbuf :오류 또는 경고 메시지를 반환하는데 할당하는 버퍼로 사용된다.
+  
+  
+  ```
+  pcap_loop(fp, 0, dispatcher_handler, NULL);
+
+	return 0;
+}
+```
+
+위 소스코드는 EOF에 도달할 때까지 패킷을 읽고 발송하는 소스코드이다. EOF는 파일 끝(End of File, EOF[1])는 데이터 소스로부터 더 이상 읽을 수 있는 데이터가 없음을 나타낸다. 
+
+pcap_loop() 함수 - 라이브 캡처 또는 저장 파일에서 패킷을 처리하는 함수이다. 
 
 
 
