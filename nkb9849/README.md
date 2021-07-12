@@ -83,7 +83,41 @@ void ifprint(pcap_if_t *d)
   printf("\n");
 }
 ```
- 위의 주어진 인터페이스에서 사용 가능한 모든 정보를 출력하는 프로그램이다. pcap_if_t 구조체 내용의 전체 내용을 인쇄하는 ifprint() 함수를 제공한다. 
+ 위의 주어진 인터페이스에서 사용 가능한 모든 정보를 출력하는 프로그램이다. pcap_if_t 구조체 내용의 전체 내용을 인쇄하는 ifprint() 함수를 제공한다. pcap_findalldevs_ex() 함수에서 반환한 모든 항목에 대해 프로그램에서 호출한다. pcap_if_t 구조체의 데이터 필드 정의는 다음과 같다.
+ 
+>pcap_if_t*name - pcap_open_live ()에 전달할 장치의 이름을 제공하는 문자열에 대한 포인터
+
+>pcap_if_t*description - NULL이 아니면 사용자가 사용하고 있는 장치 설명을 제공하는 문자열에 대한 포인터
+
+>pcap_if_t*addresses - 장치에 대한 네트워크 주소 목록의 첫 번째 요소에 대한 포인터 또는 장치에 주소가 없는 경우 NULL값을 나타낸다.
+
+>pcap_if_t*flag - 플래그 옵션은 다음과 같다.
+
+>PCAP_IF_LOOPBACK - 장치가 루프백 인터페이스인 경우 설정한다.
+
+>PCAP_IF_WIRELESS - 장치가 무선 인터페이스인 경우 설정한다. 
+
+>PCAP_IF_CONNECTION_STATUS - 어댑터가 연결되었는지 여부를 나타내는 비트마스크, 무선 인터페이스의 경우 "연결됨"은 "네트워크와 연결됨"을 의미한다.
+
+pcap_if 구조는 다음과 같다.
+
+>pcap_if_t(struct pcap_if_t* next) struct pcap_if_t*next는 NULL이 아닌 경우, 디바이스 목록의 다음 요소에 대한 포인터를 가리킨다.
+
+>pcap_addr_t() 함수 - pcap_findalldevs() 함수에서 사용하는 인터페이스 주소를 표현하는 함수이다. pcap_addr_t() 함수의 데이터 필드 구조는 다음과 같다.
+
+>struct pcap_addr_t*next 함수는 NULL이 아닌 경우, 디바이스 목록의 다음 요소에 대한 포인터를 가리킨다.
+
+>struct struct sockaddr* addr - - 주소를 나타내는 구조체 sockaddr에 대한 포인터를 가리킨다.
+
+>struct struct sockaddr* netmask - NULL이 아니면 addr이 가리키는 주소에 해당하는 netmask를 포함하는 sockaddr 구조체에 대한 포인터를 가리킨다.
+
+>struct struct sockaddr* broadcast - NULL이 아니면 addr이 가리키는 주소에 해당하는 broadcast를 포함하는 sockaddr 구조체에 대한 포인터를 가리킨다. 인터페이스가 브로드캐스트를 지원하지 않는 경우에는 NULL이 될 수 있다.
+
+>struct struct sockaddr* dstaddr - NULL이 아니면 addr이 가리키는 주소에 해당하는 목적지 주소를 포함하는 struct sockaddr에 대한 포인터. 인터페이스가 지점 간 인터페이스가 아닌 경우 null일 수 있다.
+
+위의 내용을 간략하게 정리하자면 해당 인터페이스의 주소 목록, 넷마스크 목록, 브로드캐스트 주소 목록, 대상 주소 목록, pcap_findalldevs_ex() 함수로 지정된 로컬 폴더에 있는 원격 어댑터 및 pcap 파일 목록을 반환할 수 있다.
+
+
 
 
 
