@@ -17,3 +17,7 @@
 1팀 (2021.03 ~ 2021.07)
 - [남기범](https://github.com/nkb9849)
 - [유가현](https://github.com/canon827)
+
+2팀 (2021.09 ~ )
+- [이양규](https://github.com/yglee730)
+- [배정훈](https://github.com/98-jeonghoon)
