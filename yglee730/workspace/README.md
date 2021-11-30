@@ -392,3 +392,38 @@ Allow: /contact
 Allow: /aboutus
 Disallow: /
 ```
+<br/>
+
+## Authentication-Password-Management
+* 패스워드를 비활성화한다.
+* password Type을 사용함으로써 패스워드가 사용자 화면에서 보이지 않게 한다.
+
+<span style="color:green">안전한 코드</span>
+```golang
+<input type="password" name="passwd" autocomplete="off" />
+```
+```golang
+<form method="post" action="https://somedomain.com/user/signin" autocomplete="off">
+    <input type="hidden" name="csrf" value="CSRF-TOKEN" />
+
+    <label>Username <input type="text" name="username" /></label>
+    <label>Password <input type="password" name="password" /></label>
+
+    <input type="submit" value="Submit" />
+</form>
+```golabg
+<form method="post" action="https://somedomain.com/user/signin" autocomplete="off">
+    <input type="hidden" name="csrf" value="CSRF-TOKEN" />
+
+    <div class="error">
+        <p>Invalid username and/or password</p>
+    </div>
+
+    <label>Username <input type="text" name="username" /></label>
+    <label>Password <input type="password" name="password" /></label>
+
+    <input type="submit" value="Submit" />
+</form>
+```
+
+```
