@@ -3,7 +3,7 @@
 ## access-control
 
 * 다음 코드는 현재 시각으로부터 30분간 토큰과 쿠키를 생성시키는 코드입니다.  
-  시간이 지나면 만료가 되어, 토큰과 쿠키를 재발급해야 합니다.
+  시간이 지나면 만료가 되어, 토큰과 쿠키를 재발급해야 합니다.<br/><br/>
 **_안전한 코드_**
 ```golang
     expireToken := time.Now().Add(time.Minute * 30).Unix()
@@ -13,7 +13,7 @@
 
 * JWT라고 불리는 JSON의 웹 토큰을 사용하여 인증을 강화합니다.
 > **NewWithClaims** = 함수에 원하는 서명 메소드와 자신이 정의한 구조체를 넣어두는 곳  
-> **SignedString** = jwt.NewWithClaims 함수로부터 값을 전달받고 토큰을 서명한다
+> **SignedString** = jwt.NewWithClaims 함수로부터 값을 전달받고 토큰을 서명한다<br/><br/>
 **_안전한 코드_**
 ```golang
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -119,14 +119,14 @@ func logout(res http.ResponseWriter, req *http.Request) {
 
 ## communication-security
 * 다음은 TLS를 통해 인증을 수행하는 코드이다.  
-
+<br/><br/>
 **_취약한 코드_**
 ```golang
    log.Fatal(http.ListenAndServeTLS(":443", "yourCert.pem", "yourKey.pem", nil))
 ```
 이 코드는 검증의 과정을 제대로 수행하지 않기 때문에 취약해질 가능성이 있다.<br/><br/>
 
-* 그래서 다음과 같은 코드로 검증을 하는 것이 중요하다.
+* 그래서 다음과 같은 코드로 검증을 하는 것이 중요하다.<br/><br/>
 **_안전한 코드_**
 ```golang
  var certs []Certificates
@@ -159,7 +159,7 @@ Header에서 값을 가져와, 값이 호스트와 같은지 비교한다. 같�
 
 ## data_protection
 
-* 다음은 데이터를 암호화하여 보호하는 과정을 나타내는 코드이다.<br/>
+* 다음은 데이터를 암호화하여 보호하는 과정을 나타내는 코드이다.<br/><br/>
 **_예시 코드_**
 ```golang
 // 반환 값은 "change this password to a secret"이다.
@@ -193,7 +193,7 @@ fmt.Println(string(decrypted))
 
 * 이 코드에서 취약점이 발생할 수 있다.  
 복호화를 하는 과정에서, 암호화 할 때 사용한 것과 동일한 nonce와 키를 사용하지 않았고,  
-이 과정에서 취약점으로 이어질 수 있다.<br/>
+이 과정에서 취약점으로 이어질 수 있다.<br/><br/>
 **_취약점 코드_**
 ```golang
 var decryptNonce [24]byte
@@ -252,7 +252,7 @@ default:
 
 ## output-encoding
 * 다음에 나오는 코드는 SQL Injection에 취약한 코드이다.  
-변수값이 그대로 쿼리에 주입되기 때문에 취약하다고 볼 수 있다.<br/>
+변수값이 그대로 쿼리에 주입되기 때문에 취약하다고 볼 수 있다.<br/><br/>
 **_취약한 코드_**
 ```golang
 func main(){
@@ -280,7 +280,7 @@ func main(){
 <br/>
 
 * 다음은 XSS에 취약해지게 되는 코드이다.  
-입력값을 검증하는 과정을 거치지 않는다.<br/>
+입력값을 검증하는 과정을 거치지 않는다.<br/><br/>
 **_취약한 코드_**
 ```golang
 package main
@@ -299,7 +299,7 @@ func main () {
 ```
 <br/>
 
-* XSS로부터 안전해지려면, 다음과 같이 코드를 작성한다.<br/>
+* XSS로부터 안전해지려면, 다음과 같이 코드를 작성한다.<br/><br/>
 **_안전한 코드_**
 ```golang
 package main
