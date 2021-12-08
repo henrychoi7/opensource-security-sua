@@ -4,6 +4,7 @@
 
 * 다음 코드는 현재 시각으로부터 30분간 토큰과 쿠키를 생성시키는 코드입니다.  
   시간이 지나면 만료가 되어, 토큰과 쿠키를 재발급해야 합니다.
+**_안전한 코드_**
 ```golang
     expireToken := time.Now().Add(time.Minute * 30).Unix()
     expireCookie := time.Now().Add(time.Minute * 30)
@@ -13,7 +14,7 @@
 * JWT라고 불리는 JSON의 웹 토큰을 사용하여 인증을 강화합니다.
 > **NewWithClaims** = 함수에 원하는 서명 메소드와 자신이 정의한 구조체를 넣어두는 곳  
 > **SignedString** = jwt.NewWithClaims 함수로부터 값을 전달받고 토큰을 서명한다
-
+**_안전한 코드_**
 ```golang
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
     signedToken, _ := token.SignedString([]byte("secret"))
@@ -252,6 +253,7 @@ default:
 ## output-encoding
 * 다음에 나오는 코드는 SQL Injection에 취약한 코드이다.  
 변수값이 그대로 쿼리에 주입되기 때문에 취약하다고 볼 수 있다.
+**_취약한 코드_**
 ```golang
 func main(){
 	ctx:=context.Background()
@@ -265,6 +267,7 @@ func main(){
 
 * SQL Injection으로부터 안전해지기 위해, 다음과 같은 코드를 작성한다.  
 SQL Injection을 시도하려고 해도 '?' 때문에 쿼리로 인식하지 않게 한다.
+**_안전한 코드_**
 ```golang
 func main(){
 	ctx:=context.Background()
@@ -278,6 +281,7 @@ func main(){
 
 * 다음은 XSS에 취약해지게 되는 코드이다.  
 입력값을 검증하는 과정을 거치지 않는다.
+**_취약한 코드_**
 ```golang
 package main
 
@@ -296,6 +300,7 @@ func main () {
 <br/>
 
 * XSS로부터 안전해지려면, 다음과 같이 코드를 작성한다.
+**_안전한 코드_**
 ```golang
 package main
 
