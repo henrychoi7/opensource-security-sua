@@ -14,6 +14,7 @@
 * JWT라고 불리는 JSON의 웹 토큰을 사용하여 인증을 강화합니다.
 > **NewWithClaims** = 함수에 원하는 서명 메소드와 자신이 정의한 구조체를 넣어두는 곳  
 > **SignedString** = jwt.NewWithClaims 함수로부터 값을 전달받고 토큰을 서명한다<br/><br/>
+
 **_안전한 코드_**
 ```golang
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
